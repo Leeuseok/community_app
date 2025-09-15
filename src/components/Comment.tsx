@@ -1,16 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Comment as CommentType } from '../types';
 
-interface CommentProps {
-  author: string;
-  text: string;
+// Comment 컴포넌트
+// - 댓글 표시용 단일 항목
+// - Props: comment: Comment
+
+interface Props {
+  comment: CommentType;
 }
 
-const Comment: React.FC<CommentProps> = ({ author, text }) => {
+const Comment: React.FC<Props> = ({ comment }) => {
   return (
     <View style={styles.commentContainer}>
-      <Text style={styles.author}>{author}</Text>
-      <Text style={styles.text}>{text}</Text>
+      <Text style={styles.author}>{comment.authorId ?? 'Unknown'}</Text>
+      <Text style={styles.text}>{comment.content}</Text>
     </View>
   );
 };

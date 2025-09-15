@@ -1,12 +1,22 @@
+// CreatePost 화면
+// - 게시글 작성 화면
+// - 이미지 업로드(ImageUploader)와 제목/내용 입력 후 createPost 호출
+// - Props: navigation (NativeStackNavigationProp)
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import ImageUploader from '../components/ImageUploader';
 import { createPost } from '../services/firebase'; // Assuming you have a function to handle post creation
+import { CreatePostNavigationProp } from '../navigation/types';
 
-const CreatePost = ({ navigation }) => {
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [image, setImage] = useState(null);
+type Props = {
+  navigation: CreatePostNavigationProp;
+};
+
+const CreatePost: React.FC<Props> = ({ navigation }) => {
+    const [title, setTitle] = useState<string>('');
+    const [content, setContent] = useState<string>('');
+    const [image, setImage] = useState<string | null>(null);
 
     const handleSubmit = async () => {
         if (title && content) {

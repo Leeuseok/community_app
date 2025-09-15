@@ -20,7 +20,8 @@ const SignUp = () => {
       await createUserWithEmailAndPassword(auth, email, password);
       // Navigate to home or another screen after successful sign up
     } catch (error) {
-      setError(error.message);
+      const message = (error as Error).message ?? String(error);
+      setError(message);
     }
   };
 

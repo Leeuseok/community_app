@@ -1,17 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Post } from '../types';
+
+// PostItem 컴포넌트
+// - 게시글 목록용 UI 아이템
+// - Props: post: Post, onPress?: () => void
 
 interface PostItemProps {
-  title: string;
-  content: string;
+  post: Post;
+  onPress?: () => void;
 }
 
-const PostItem: React.FC<PostItemProps> = ({ title, content }) => {
+const PostItem: React.FC<PostItemProps> = ({ post, onPress }) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.content}>{content.substring(0, 100)}...</Text>
-    </View>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+      <Text style={styles.title}>{post.title}</Text>
+      <Text style={styles.content}>{(post.content || '').substring(0, 100)}...</Text>
+    </TouchableOpacity>
   );
 };
 

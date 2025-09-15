@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
-    "lib": ["es6", "dom"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
     "jsx": "react-native",
     "strict": true,
     "esModuleInterop": true,
@@ -11,8 +14,16 @@
     "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"]
+      "@/*": [
+        "*"
+      ]
     }
   },
-  "exclude": ["node_modules", "babel.config.js", "app.json", "assets"]
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "app.json",
+    "assets"
+  ],
+  "extends": "expo/tsconfig.base"
 }

@@ -1,11 +1,15 @@
+// PostList 화면
+// - 모든 게시글 목록을 표시 (홈과 유사)
+
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, ActivityIndicator } from 'react-native';
 import PostItem from '../components/PostItem';
 import { fetchPosts } from '../services/firebase';
+import { Post } from '../types';
 
-const PostList = () => {
-    const [posts, setPosts] = useState([]);
-    const [loading, setLoading] = useState(true);
+const PostList: React.FC = () => {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const getPosts = async () => {
@@ -34,7 +38,7 @@ const PostList = () => {
         <FlatList
             data={posts}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <PostItem post={item} />}
+            renderItem={({ item }: { item: Post }) => <PostItem post={item} />}
         />
     );
 };

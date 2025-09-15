@@ -1,23 +1,47 @@
+// ImageUploader 컴포넌트
+// - Expo ImagePicker를 사용하여 기기에서 이미지를 선택
+// - 선택된 이미지 URI를 부모로 전달(onImageSelected)
+// Props: onImageSelected: (uri: string) => void
+
 import React, { useState } from 'react';
-import { View, Button, Image, StyleSheet } from 'react-native';
+import { View, Button, Image, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-const ImageUploader = ({ onImageSelected }) => {
-    const [selectedImage, setSelectedImage] = useState(null);
+interface Props {
+    onImageSelected: (uri: string) => void;
+}
+
+const ImageUploader: React.FC<Props> = ({ onImageSelected }) => {
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const pickImage = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-        if (permissionResult.granted === false) {
-            alert('Permission to access camera roll is required!');
+        const granted = (permissionResult as any).granted !== undefined
+            ? (permissionResult as any).granted
+            : permissionResult.status === 'granted';
+
+        if (!granted) {
+            Alert.alert('권한 필요', '이미지 접근 권한이 필요합니다.');
             return;
         }
 
-        const result = await ImagePicker.launchImageLibraryAsync();
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 0.7,
+            allowsEditing: true,
+        });
 
-        if (!result.cancelled) {
-            setSelectedImage(result.uri);
-            onImageSelected(result.uri);
+        const anyResult = result as any;
+        if (anyResult.cancelled === true || anyResult.canceled === true) {
+            return;
+        }
+
+        const uri: string | undefined = anyResult.uri ?? (Array.isArray(anyResult.assets) ? anyResult.assets[0]?.uri : undefined);
+
+        if (typeof uri === 'string') {
+            setSelectedImage(uri);
+            onImageSelected(uri);
         }
     };
 
