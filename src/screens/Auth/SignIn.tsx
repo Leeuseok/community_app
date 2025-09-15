@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import useAuth from '../../hooks/useAuth';
-
 import cafe from '../../assets/icon.png';
 
 const SignIn: React.FC = () => {
@@ -94,7 +93,6 @@ const styles = StyleSheet.create({
   },
   label: {
     color: 'rgba(17, 17, 17, 1)',
-    fontFamily: 'SUIT',
     fontSize: 14,
     marginBottom: 6,
   },
@@ -118,7 +116,6 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
-    fontFamily: 'Montserrat',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -127,7 +124,6 @@ const styles = StyleSheet.create({
   },
   signupText: {
     color: 'rgba(0,0,0,1)',
-    fontFamily: 'Montserrat',
     fontSize: 18,
   },
 });
