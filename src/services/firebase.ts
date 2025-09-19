@@ -9,22 +9,21 @@
 // import { createPost, uploadImageAsync } from '../services/firebase';
 // await createPost({ title: 'Hi', content: 'Hello', image: localUri });
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, getDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyDr74nzMrKyEWFLXaM_M9_NodUYvVUVZ50",
+  authDomain: "community-a1643.firebaseapp.com",
+  projectId: "community-a1643",
+  storageBucket: "community-a1643.appspot.com",
+  appId: "1:481610290995:web:b5e0a8437af06a67075046",
+  measurementId: "G-Y8ZZ94SNLV"
 };
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const firestore = getFirestore(app);
@@ -59,6 +58,7 @@ async function createPost({ title, content, image }: CreatePostInput): Promise<s
       content,
       imageUrl,
       userId: auth.currentUser?.uid ?? null,
+      authorName: auth.currentUser?.displayName ?? null,
       createdAt: serverTimestamp(),
     });
 
@@ -69,15 +69,56 @@ async function createPost({ title, content, image }: CreatePostInput): Promise<s
   }
 }
 
+// Helper to normalize Firestore timestamp -> JS Date
+function toDate(value: any): any {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  return value instanceof Date ? value : new Date(value);
+}
+
 // Fetch posts ordered by creation time (newest first)
 async function fetchPosts(): Promise<any[]> {
+  console.debug('fetchPosts: start');
   try {
     const q = query(collection(firestore, 'posts'), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as any) }));
-  } catch (err) {
-    console.error('fetchPosts error', err);
-    throw err;
+    console.debug(`fetchPosts: got ${snapshot.size} docs`);
+    return snapshot.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        id: d.id,
+        title: data.title,
+        content: data.content,
+        imageUrl: data.imageUrl ?? null,
+        // normalize author fields
+        userId: data.userId ?? data.authorId ?? null,
+        authorName: data.authorName ?? null,
+        createdAt: toDate(data.createdAt),
+      };
+    });
+  } catch (err: any) {
+    console.error('fetchPosts error (ordered):', err?.message ?? err);
+    // If ordering by createdAt failed (e.g., permission/index/timestamp problems), try a simple fallback fetch
+    try {
+      console.debug('fetchPosts: attempting fallback fetch without orderBy');
+      const snapshot = await getDocs(collection(firestore, 'posts'));
+      console.debug(`fetchPosts fallback: got ${snapshot.size} docs`);
+      return snapshot.docs.map((d) => {
+        const data = d.data() as any;
+        return {
+          id: d.id,
+          title: data.title,
+          content: data.content,
+          imageUrl: data.imageUrl ?? null,
+          userId: data.userId ?? data.authorId ?? null,
+          authorName: data.authorName ?? null,
+          createdAt: toDate(data.createdAt),
+        };
+      });
+    } catch (err2) {
+      console.error('fetchPosts fallback error:', err2);
+      throw err2;
+    }
   }
 }
 
@@ -87,7 +128,16 @@ async function fetchPostDetails(postId: string): Promise<any | null> {
     const docRef = doc(firestore, 'posts', postId);
     const snapshot = await getDoc(docRef);
     if (!snapshot.exists()) return null;
-    return { id: snapshot.id, ...(snapshot.data() as any) };
+    const data = snapshot.data() as any;
+    return {
+      id: snapshot.id,
+      title: data.title,
+      content: data.content,
+      imageUrl: data.imageUrl ?? null,
+      userId: data.userId ?? data.authorId ?? null,
+      authorName: data.authorName ?? null,
+      createdAt: toDate(data.createdAt),
+    };
   } catch (err) {
     console.error('fetchPostDetails error', err);
     throw err;
@@ -99,7 +149,15 @@ async function fetchComments(postId: string): Promise<any[]> {
   try {
     const commentsQuery = query(collection(firestore, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'));
     const snapshot = await getDocs(commentsQuery);
-    return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+    return snapshot.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        id: d.id,
+        content: data.content,
+        authorId: data.authorId ?? data.userId ?? null,
+        createdAt: toDate(data.createdAt),
+      };
+    });
   } catch (err) {
     console.error('fetchComments error', err);
     throw err;
@@ -122,3 +180,4 @@ async function addComment(postId: string, content: string): Promise<string> {
 }
 
 export { auth, firestore, storage, uploadImageAsync, createPost, fetchPosts, fetchPostDetails, fetchComments, addComment };
+

@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import useAuth from '../../hooks/useAuth';
 import cafe from '../../assets/icon.png';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 
-const SignIn: React.FC = () => {
+type SignInNavProp = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
+
+const SignIn: React.FC<{ navigation: SignInNavProp }> = ({ navigation }) => {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,6 +17,8 @@ const SignIn: React.FC = () => {
     setLoading(true);
     try {
       await signIn(email.trim(), password);
+      // 로그인 성공 시 포스트 리스트 화면으로 이동
+      navigation.replace('PostList');
     } catch (error) {
       const message = (error as Error)?.message ?? '알 수 없는 오류가 발생했습니다';
       Alert.alert('로그인 오류', message);
@@ -62,7 +68,7 @@ const SignIn: React.FC = () => {
         <Text testID="btn-signin-text" style={styles.btnText}>{loading ? '로딩...' : '로그인'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity testID="link-signup" style={styles.signupWrap} onPress={() => { /* 네비게이션 연결 필요 시 수정 */ }}>
+      <TouchableOpacity testID="link-signup" style={styles.signupWrap} onPress={() => navigation.navigate('SignUp')}>
         <Text testID="link-signup-text" style={styles.signupText}>{`회원가입`}</Text>
       </TouchableOpacity>
     </View>

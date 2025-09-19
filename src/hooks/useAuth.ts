@@ -10,6 +10,7 @@ import {
     signInWithEmailAndPassword as fbSignInWithEmailAndPassword,
     createUserWithEmailAndPassword as fbCreateUserWithEmailAndPassword,
     signOut as fbSignOut,
+    updateProfile as fbUpdateProfile,
 } from 'firebase/auth';
 
 const useAuth = () => {
@@ -44,10 +45,13 @@ const useAuth = () => {
         }
     };
 
-    const signUp = async (email: string, password: string) => {
+    const signUp = async (email: string, password: string, name?: string) => {
         setLoading(true);
         try {
-            await fbCreateUserWithEmailAndPassword(auth, email, password);
+            const cred = await fbCreateUserWithEmailAndPassword(auth, email, password);
+            if (name && cred.user) {
+                await fbUpdateProfile(cred.user, { displayName: name });
+            }
         } catch (err) {
             setError((err as Error).message ?? String(err));
         } finally {
